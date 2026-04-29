@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>RM_Action_Required__c</fullName>
+    <label>RM Action Required</label>
+    <type>Checkbox</type>
+    <formula>Exposure_Pct_of_AUM__c >= 20</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+</CustomField>
