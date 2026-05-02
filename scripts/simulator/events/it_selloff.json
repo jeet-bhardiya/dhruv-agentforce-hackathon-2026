@@ -1,0 +1,9 @@
+{
+  "eventId": "IT-SELLOFF-2026-04-30-001",
+  "symbol": "NIFTYIT",
+  "eventType": "IT_SELLOFF",
+  "pctChange": -3.40,
+  "sector": "IT",
+  "severity": "Medium",
+  "timestamp": "2026-04-30T11:30:00Z"
+}

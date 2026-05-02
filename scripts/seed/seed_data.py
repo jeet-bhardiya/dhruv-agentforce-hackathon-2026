@@ -85,6 +85,7 @@ def _write_csv(path: Path, rows: list[dict]) -> None:
 
 def _force_exposure(holdings: list, person: dict, security: dict, pct: float) -> None:
     holdings.append({
+        "Name": f"{person['ExternalId']}-{security['Ticker']}",
         "AccountExternalId": person["ExternalId"],
         "SecurityExternalId": security["ExternalId"],
         "MarketValue__c": round(person["AUM__c"] * pct),
@@ -236,6 +237,7 @@ def _holdings(rng: random.Random, persons: list[dict], securities: list[dict]) -
             for _ in range(n):
                 sec = rng.choice(other_secs)
                 holdings.append({
+                    "Name": f"{pid}-{sec['Ticker']}",
                     "AccountExternalId": pid,
                     "SecurityExternalId": sec["ExternalId"],
                     "MarketValue__c": per_holding,
@@ -247,6 +249,7 @@ def _holdings(rng: random.Random, persons: list[dict], securities: list[dict]) -
             for _ in range(n):
                 sec = rng.choice(other_secs)
                 holdings.append({
+                    "Name": f"{pid}-{sec['Ticker']}",
                     "AccountExternalId": pid,
                     "SecurityExternalId": sec["ExternalId"],
                     "MarketValue__c": round(remaining / n),

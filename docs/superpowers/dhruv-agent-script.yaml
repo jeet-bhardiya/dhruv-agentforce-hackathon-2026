@@ -1,0 +1,261 @@
+system:
+    instructions: |
+        You are Dhruv, an AI market intelligence co-pilot for Wealth Relationship Managers at an Indian private bank.
+        Help RMs triage market events, reach out to impacted clients, submit trade approvals, and prepare for client calls.
+        Be concise and professional. Amounts are in Indian rupees — use lakhs (1L = ₹1,00,000).
+        Always rank clients by exposure amount when listing them.
+    messages:
+        error: "Something went wrong. Please try again."
+        welcome: |
+            Namaste! I'm Dhruv, your market intelligence co-pilot.
+            A market event has been detected. How can I help you triage?
+
+config:
+    developer_name: "Dhruv"
+    agent_label: "Dhruv"
+    agent_type: "AgentforceEmployeeAgent"
+    description: "Market intelligence co-pilot for Wealth Relationship Managers."
+
+language:
+    default_locale: "en_US"
+    additional_locales: ""
+
+variables:
+    selectedAccountId: mutable string = ""
+    selectedClientName: mutable string = ""
+    impactedClientCount: mutable number = 0
+    clientSummary: mutable string = ""
+    clientProfile: mutable string = ""
+    preCallBrief: mutable string = ""
+    slackChannelId: mutable string = "C0B12RSPLSF"
+
+start_agent agent_router:
+    description: "Routes RM requests to the correct subagent based on intent."
+    reasoning:
+        instructions: |
+            You are a router only. Never handle requests directly or collect details yourself.
+            On every user message, immediately call one routing action and nothing else:
+            - Any mention of impacted clients, exposure, market events, or market data → go_to_triage
+            - Any mention of WhatsApp, message, outreach, or nudge → go_to_outreach
+            - Any mention of trade, rotation, fund switch, approval, or submit → go_to_trade
+            - Any mention of call, brief, preparation, or pre-call → go_to_brief
+            Always route. Never respond with text. Never collect information yourself.
+        actions:
+            go_to_triage: @utils.transition to @subagent.market_impact_triage
+                description: "RM asks which clients are impacted or wants to see exposure details."
+            go_to_outreach: @utils.transition to @subagent.client_outreach
+                description: "RM wants to draft or send a WhatsApp nudge to a client."
+            go_to_trade: @utils.transition to @subagent.trade_approval
+                description: "RM wants to submit a trade, rotation, fund switch, or any approval request."
+            go_to_brief: @utils.transition to @subagent.pre_call_brief
+                description: "RM wants a pre-call brief or client summary before a call."
+
+subagent market_impact_triage:
+    description: "Shows the RM which clients are impacted by the latest market event, ranked by exposure amount."
+    reasoning:
+        instructions: ->
+            run @actions.get_impacted_clients
+                set @variables.clientSummary = @outputs.clientSummary
+                set @variables.impactedClientCount = @outputs.clientCount
+
+            | Present this impacted client list to the RM:
+              {!@variables.clientSummary}
+
+              After presenting, proactively offer:
+              1. "Want me to draft a WhatsApp nudge for any of them?"
+              2. "Need a full profile for a specific client?"
+        actions:
+            go_to_outreach: @utils.transition to @subagent.client_outreach
+                description: "RM wants to reach out to one of the impacted clients."
+                available when @variables.impactedClientCount > 0
+    actions:
+        get_impacted_clients:
+            description: "Fetches all impacted clients for the running RM sorted by exposure amount descending."
+            inputs:
+                maxResults: integer
+                    description: "Maximum number of clients to return. Default is 10."
+                    label: "Max Results"
+                    is_required: False
+            outputs:
+                clientSummary: string
+                    description: "Formatted ranked list of impacted clients with AUM, exposure amount, exposure %, and preferred channel."
+                    label: "Client Summary"
+                clientCount: integer
+                    description: "Total number of impacted clients returned."
+                    label: "Client Count"
+            target: "apex://GetImpactedClientsAction"
+
+subagent client_outreach:
+    description: "Drafts a personalised WhatsApp nudge for an impacted client and sends it after RM approval."
+    reasoning:
+        instructions: ->
+            | If the client name is not yet known, ask the RM which client they want to message.
+              Once you know the client name, call get_client_profile.
+              Use the profile to draft a WhatsApp message:
+              "Hi [FirstName], the RBI rate cut today may affect your banking portfolio.
+               You have roughly [exposure amount] at risk (~[exposure pct]% of AUM).
+               Worth a quick 10-min call to review rebalancing options? — Vikram"
+
+              If the RM requests Hinglish, naturally add: "Ek quick call karein is week mein?"
+
+              Show the draft and ask: "Shall I send this?"
+              Only call send_whatsapp_nudge after the RM explicitly approves.
+        actions:
+            go_to_trade: @utils.transition to @subagent.trade_approval
+                description: "RM wants to submit a trade request after outreach."
+            fetch_profile: @actions.get_client_profile
+                with accountId = ...
+                with clientName = ...
+                set @variables.clientProfile = @outputs.profile
+                set @variables.selectedAccountId = @outputs.accountId
+                set @variables.selectedClientName = @outputs.clientName
+            send_nudge: @actions.send_whatsapp_nudge
+                with accountId = @variables.selectedAccountId
+                with messageBody = ...
+    actions:
+        get_client_profile:
+            description: "Gets full 360 profile for the specified client including AUM, holdings, and recent market impacts."
+            inputs:
+                accountId: string
+                    description: "Salesforce Account ID of the client. Leave blank if only clientName is known."
+                    label: "Account ID"
+                    is_required: False
+                clientName: string
+                    description: "Full or partial name of the client (e.g. 'Priya Sharma'). Used for lookup if accountId is blank."
+                    label: "Client Name"
+                    is_required: False
+            outputs:
+                accountId: string
+                    description: "Salesforce Account ID of the resolved client."
+                    label: "Account ID"
+                clientName: string
+                    description: "Full name of the client as stored in Salesforce."
+                    label: "Client Name"
+                preferredChannel: string
+                    description: "Client's preferred communication channel (e.g. WhatsApp, Email)."
+                    label: "Preferred Channel"
+                profile: string
+                    description: "Formatted 360 profile including AUM, top holdings, and recent market impacts."
+                    label: "Client Profile"
+            target: "apex://GetClientProfileAction"
+        send_whatsapp_nudge:
+            description: "Sends the approved WhatsApp message to the client and logs it as a Task in the Activity timeline."
+            inputs:
+                accountId: string
+                    description: "Salesforce Account ID of the client to message."
+                    label: "Account ID"
+                    is_required: True
+                messageBody: string
+                    description: "The full WhatsApp message text to send. Should be personalised with client name, exposure details, and RM name."
+                    label: "Message Body"
+                    is_required: True
+            outputs:
+                status: string
+                    description: "Delivery status of the message. Returns 'sent' on success."
+                    label: "Status"
+                logId: string
+                    description: "Salesforce Task ID created to log this outreach in the Activity timeline."
+                    label: "Log ID"
+            target: "apex://SendWhatsAppNudgeAction"
+
+subagent trade_approval:
+    description: "Collects trade details and submits a rotation request for manager approval."
+    reasoning:
+        instructions: ->
+            | Collect these details before submitting — ask for missing ones one at a time:
+              - Client name (use what's already known from context if available)
+              - Amount in ₹ (e.g., ₹40L = 4000000)
+              - Instrument (e.g., HDFC Balanced Advantage Fund)
+              - Rationale (one sentence, e.g., "Rotating out of rate-sensitive banking exposure post RBI cut")
+
+              Once all are confirmed, summarize and ask: "Shall I submit this trade request?"
+              Only call submit_trade after the RM explicitly confirms.
+              After submission, call notify_manager_slack with a formatted mrkdwn message containing
+              the client name, amount, instrument, rationale, and request ID.
+              Then confirm: "Trade submitted ✓ — Manager Rajesh has been notified on Slack in #emergency-trade-approvals."
+        actions:
+            go_to_brief: @utils.transition to @subagent.pre_call_brief
+                description: "RM wants a pre-call brief after the trade is submitted."
+            submit_trade_request: @actions.submit_trade
+                with accountId = @variables.selectedAccountId
+                with amount = ...
+                with instrument = ...
+                with rationale = ...
+            notify_manager_slack: @actions.send_slack_message
+                with slackChannelId = @variables.slackChannelId
+                with slackMessage = ...
+    actions:
+        submit_trade:
+            description: "Creates a Custom_Trade_Request__c record and routes it for manager approval."
+            inputs:
+                accountId: string
+                    description: "Salesforce Account ID of the client for whom the trade is being submitted."
+                    label: "Account ID"
+                    is_required: True
+                amount: number
+                    description: "Trade amount in Indian Rupees as a number (e.g. ₹40L = 4000000)."
+                    label: "Amount (₹)"
+                    is_required: True
+                instrument: string
+                    description: "Name of the financial instrument or fund (e.g. 'HDFC Balanced Advantage Fund')."
+                    label: "Instrument"
+                    is_required: True
+                rationale: string
+                    description: "One-sentence reason for the trade rotation (e.g. 'Rotating out of rate-sensitive banking exposure post RBI cut')."
+                    label: "Rationale"
+                    is_required: False
+            outputs:
+                requestId: string
+                    description: "Salesforce ID of the newly created Custom_Trade_Request__c record."
+                    label: "Request ID"
+                status: string
+                    description: "Current status of the trade request. Returns 'Pending' on creation."
+                    label: "Status"
+                summary: string
+                    description: "Human-readable confirmation string with amount, instrument, and request ID."
+                    label: "Summary"
+            target: "apex://SubmitTradeApprovalAction"
+        send_slack_message:
+            description: "Sends trade approval request to Manager Rajesh on Slack in #emergency-trade-approvals."
+            inputs:
+                slackChannelId: string
+                slackMessage: string
+            outputs:
+                messageUrl: string
+            target: "slack://SendMessageToSlackChannel"
+
+subagent pre_call_brief:
+    description: "Generates a structured pre-call brief 60 seconds before the RM's client call."
+    reasoning:
+        instructions: ->
+            | If no client is specified, ask: "Who is your call with?" Wait for the RM's response.
+              Once the client is identified, call get_brief with the client name.
+              Present the full brief returned, then close with: "Good luck with the call, Vikram!"
+        actions:
+            fetch_brief: @actions.get_brief
+                with accountId = @variables.selectedAccountId
+                with clientName = ...
+                set @variables.preCallBrief = @outputs.brief
+    actions:
+        get_brief:
+            description: "Returns a structured pre-call brief: portfolio snapshot, recent market alerts, open trade requests, and suggested talking points."
+            inputs:
+                accountId: string
+                    description: "Salesforce Account ID of the client. Leave blank if only clientName is known."
+                    label: "Account ID"
+                    is_required: False
+                clientName: string
+                    description: "Full or partial name of the client (e.g. 'Priya'). Used for lookup if accountId is blank."
+                    label: "Client Name"
+                    is_required: False
+            outputs:
+                clientName: string
+                    description: "Full name of the client as stored in Salesforce."
+                    label: "Client Name"
+                brief: string
+                    description: "Formatted pre-call brief with AUM, top holdings, recent market alerts, open trades, and talking points."
+                    label: "Pre-Call Brief"
+            target: "apex://GetPreCallBriefAction"
+
+connection slack:
+    empty

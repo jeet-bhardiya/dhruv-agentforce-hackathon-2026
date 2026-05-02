@@ -1,0 +1,91 @@
+.mcc-wrapper {
+    padding: 1rem;
+    background: #f3f3f3;
+    min-height: 60vh;
+}
+
+/* ── Alert Banner ── */
+.event-banner {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    color: #fff;
+    font-weight: 500;
+}
+.event-banner--high   { background: #ba0517; }
+.event-banner--medium { background: #d97000; }
+.event-banner--low    { background: #2e844a; }
+
+.banner-time {
+    opacity: 0.8;
+    font-size: 0.8rem;
+}
+
+.severity-badge {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.25);
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+}
+
+/* ── Funnel ── */
+.funnel-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.funnel-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    border-top: 4px solid #0070d2;
+}
+.funnel-card--alert { border-top-color: #d97000; }
+.funnel-card--mine  { border-top-color: #ba0517; }
+
+.funnel-number {
+    font-size: 3.25rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #032d60;
+    margin-bottom: 0.25rem;
+}
+.funnel-card--alert .funnel-number { color: #d97000; }
+.funnel-card--mine  .funnel-number { color: #ba0517; }
+
+.funnel-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3e3e3c;
+    margin-bottom: 0.2rem;
+}
+
+.funnel-sub {
+    font-size: 0.75rem;
+    color: #706e6b;
+}
+
+.funnel-arrow {
+    font-size: 2rem;
+    color: #aeaeae;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+/* ── Table Card ── */
+.table-card {
+    display: block;
+}

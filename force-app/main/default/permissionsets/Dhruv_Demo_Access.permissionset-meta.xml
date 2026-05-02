@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Dhruv Demo Access</label>
+    <description>Object, field, tab, and app access for the Dhruv RM Co-Pilot demo. Assign to Vikram Rao and any admin running the demo.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <license>Salesforce</license>
+
+    <!-- ==================== Custom Objects ==================== -->
+    <objectPermissions>
+        <object>Market_Event__c</object>
+        <allowCreate>true</allowCreate>
+        <allowRead>true</allowRead>
+        <allowEdit>true</allowEdit>
+        <allowDelete>true</allowDelete>
+        <viewAllRecords>true</viewAllRecords>
+        <modifyAllRecords>true</modifyAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <object>Market_Impact__c</object>
+        <allowCreate>true</allowCreate>
+        <allowRead>true</allowRead>
+        <allowEdit>true</allowEdit>
+        <allowDelete>true</allowDelete>
+        <viewAllRecords>true</viewAllRecords>
+        <modifyAllRecords>true</modifyAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <object>Custom_Trade_Request__c</object>
+        <allowCreate>true</allowCreate>
+        <allowRead>true</allowRead>
+        <allowEdit>true</allowEdit>
+        <allowDelete>true</allowDelete>
+        <viewAllRecords>true</viewAllRecords>
+        <modifyAllRecords>true</modifyAllRecords>
+    </objectPermissions>
+
+    <!-- ==================== Market_Event__c (non-required, non-formula) ==================== -->
+    <fieldPermissions>
+        <field>Market_Event__c.Symbol__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Market_Event__c.Pct_Change__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Market_Event__c.Source__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Market_Event__c.Headline__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+
+    <!-- Market_Impact__c: all fields are required or formula — covered by object permission alone -->
+
+    <!-- ==================== Custom_Trade_Request__c (non-required, non-formula) ==================== -->
+    <fieldPermissions>
+        <field>Custom_Trade_Request__c.Rationale__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Custom_Trade_Request__c.RM__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Custom_Trade_Request__c.Approver__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Custom_Trade_Request__c.Slack_Channel_Id__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Custom_Trade_Request__c.Approval_Work_Item_Id__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+
+    <!-- ==================== Account custom fields ==================== -->
+    <fieldPermissions>
+        <field>Account.AUM__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Account.External_Id__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+
+    <!-- ==================== FinancialSecurity custom field ==================== -->
+    <fieldPermissions>
+        <field>FinancialSecurity.External_Id__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+
+    <!-- ==================== Tab visibility ==================== -->
+    <tabSettings>
+        <tab>Market_Event__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Market_Impact__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Custom_Trade_Request__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+
+    <!-- ==================== App visibility ==================== -->
+    <applicationVisibilities>
+        <application>Market_Command_Center</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+</PermissionSet>
