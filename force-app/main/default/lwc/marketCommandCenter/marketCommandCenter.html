@@ -6,55 +6,108 @@
             <div class={eventBannerClass}>
                 <lightning-icon icon-name="utility:warning" size="x-small" variant="inverse"
                     class="slds-m-right_x-small"></lightning-icon>
-                <strong>LIVE ALERT &nbsp;·&nbsp;</strong>
-                <span class="slds-m-left_xx-small">{data.eventHeadline}</span>
-                <span class="slds-m-left_medium banner-time">{data.eventTime}</span>
-                <span class="severity-badge">{data.eventSeverity} Severity</span>
+                <span class="banner-headline"><strong>LIVE ALERT &nbsp;·&nbsp;</strong>{data.eventHeadline}</span>
+                <span class="banner-time">{data.eventTime}</span>
+                <span class="severity-badge">{data.eventSeverity}</span>
             </div>
         </template>
 
-        <!-- Funnel Cards -->
-        <div class="funnel-row">
-            <div class="funnel-card">
-                <div class="funnel-number">{totalClients}</div>
-                <div class="funnel-label">Total Clients</div>
-                <div class="funnel-sub">Bank Portfolio</div>
+        <!-- Stat Tiles (desktop: big funnel, mobile: compact 3-col grid) -->
+        <div class="stat-row">
+            <div class="stat-tile">
+                <div class="stat-number">{totalClients}</div>
+                <div class="stat-label">Total Clients</div>
+                <div class="stat-sub">Bank Portfolio</div>
             </div>
-            <div class="funnel-arrow">&#8594;</div>
-            <div class="funnel-card funnel-card--alert">
-                <div class="funnel-number">{impactedClients}</div>
-                <div class="funnel-label">Impacted</div>
-                <div class="funnel-sub">&gt;20% rate-sensitive exposure</div>
+            <div class="stat-arrow">›</div>
+            <div class="stat-tile stat-tile--amber">
+                <div class="stat-number">{impactedClients}</div>
+                <div class="stat-label">Impacted</div>
+                <div class="stat-sub">&gt;20% exposure</div>
             </div>
-            <div class="funnel-arrow">&#8594;</div>
-            <div class="funnel-card funnel-card--mine">
-                <div class="funnel-number">{myClients}</div>
-                <div class="funnel-label">Your Clients</div>
-                <div class="funnel-sub">Needs immediate attention</div>
+            <div class="stat-arrow">›</div>
+            <div class="stat-tile stat-tile--red">
+                <div class="stat-number">{myClients}</div>
+                <div class="stat-label">Your Clients</div>
+                <div class="stat-sub">Needs attention</div>
             </div>
         </div>
 
-        <!-- Client Table -->
-        <lightning-card title="Your Impacted Clients — Ranked by Exposure"
-            icon-name="standard:account" class="table-card">
+        <!-- Desktop: full datatable -->
+        <template if:true={isDesktop}>
+            <lightning-card title="Your Impacted Clients — Ranked by Exposure"
+                icon-name="standard:account" class="table-card">
+                <template if:true={hasClients}>
+                    <div class="slds-p-horizontal_small slds-p-bottom_small">
+                        <lightning-datatable
+                            key-field="accountId"
+                            data={tableData}
+                            columns={columns}
+                            hide-checkbox-column
+                            sorted-by="exposureAmount"
+                            sorted-direction="desc">
+                        </lightning-datatable>
+                    </div>
+                </template>
+                <template if:false={hasClients}>
+                    <p class="slds-p-around_medium slds-text-color_weak">
+                        No impacted clients assigned to you for the latest market event.
+                    </p>
+                </template>
+            </lightning-card>
+        </template>
+
+        <!-- Mobile: card list -->
+        <template if:true={isMobile}>
+            <div class="mobile-list-header">
+                <lightning-icon icon-name="standard:account" size="x-small"
+                    class="slds-m-right_x-small"></lightning-icon>
+                Your Impacted Clients
+            </div>
+
             <template if:true={hasClients}>
-                <div class="slds-p-horizontal_small slds-p-bottom_small">
-                    <lightning-datatable
-                        key-field="accountId"
-                        data={tableData}
-                        columns={columns}
-                        hide-checkbox-column
-                        sorted-by="exposureAmount"
-                        sorted-direction="desc">
-                    </lightning-datatable>
+                <div class="client-cards">
+                    <template for:each={tableData} for:item="row">
+                        <div key={row.accountId} class={row.cardClass}>
+
+                            <div class="cc-header">
+                                <a href={row.accountUrl} class="cc-name">{row.clientName}</a>
+                                <span class={row.severityBadgeClass}>{row.severity}</span>
+                            </div>
+
+                            <div class="cc-stats">
+                                <div class="cc-stat">
+                                    <div class="cc-stat-label">AUM</div>
+                                    <div class="cc-stat-value">{row.aumFormatted}</div>
+                                </div>
+                                <div class="cc-stat">
+                                    <div class="cc-stat-label">At Risk</div>
+                                    <div class="cc-stat-value cc-stat-value--risk">{row.exposureFormatted}</div>
+                                </div>
+                                <div class="cc-stat">
+                                    <div class="cc-stat-label">Exposure</div>
+                                    <div class="cc-stat-value">{row.exposurePctFormatted}</div>
+                                </div>
+                            </div>
+
+                            <div class="cc-footer">
+                                <lightning-icon icon-name={row.channelIcon} size="xx-small"
+                                    class="slds-m-right_xx-small"></lightning-icon>
+                                <span class="cc-channel-label">{row.preferredChannel}</span>
+                                <template if:true={row.city}>
+                                    <span class="cc-city">· {row.city}</span>
+                                </template>
+                            </div>
+
+                        </div>
+                    </template>
                 </div>
             </template>
+
             <template if:false={hasClients}>
-                <p class="slds-p-around_medium slds-text-color_weak">
-                    No impacted clients assigned to you for the latest market event.
-                </p>
+                <p class="no-clients-msg">No impacted clients assigned to you for the latest market event.</p>
             </template>
-        </lightning-card>
+        </template>
 
     </div>
 </template>
