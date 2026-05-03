@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Meta_WA_Token</fullName>
+        <categories>WhatsApp</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Meta WhatsApp Cloud API access token</shortDescription>
+        <value>REPLACE_WITH_YOUR_META_ACCESS_TOKEN</value>
+    </labels>
+    <labels>
+        <fullName>Meta_WA_Phone_Id</fullName>
+        <categories>WhatsApp</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Meta WhatsApp Phone Number ID</shortDescription>
+        <value>REPLACE_WITH_YOUR_PHONE_NUMBER_ID</value>
+    </labels>
+</CustomLabels>
