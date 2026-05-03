@@ -2,13 +2,15 @@
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
     <defaultLandingTab>Market_Event__c</defaultLandingTab>
     <description>Dhruv — RM Market Monitoring Command Center</description>
-    <formFactors>Large</formFactors>
     <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
-    <isServiceCloudConsole>false</isServiceCloudConsole>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Market Command Center</label>
     <navType>Standard</navType>
+    <tabs>Command_Center1</tabs>
     <tabs>Market_Event__c</tabs>
     <tabs>Market_Impact__c</tabs>
     <tabs>Custom_Trade_Request__c</tabs>

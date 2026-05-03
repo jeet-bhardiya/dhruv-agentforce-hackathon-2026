@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataStreamDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <areHeadersIncludedInFile>false</areHeadersIncludedInFile>
+    <bulkIngest>false</bulkIngest>
+    <creationType>Custom</creationType>
+    <dataConnector>MarketEvent_Stream_ae1af9a3_3da1_4ade_a0c8_d6abc0f07829</dataConnector>
+    <dataConnectorType>IngestApi</dataConnectorType>
+    <dataExtractMethods>FULL_REFRESH</dataExtractMethods>
+    <dataPlatformDataSetItemName>INGESTAPI</dataPlatformDataSetItemName>
+    <dataSource>MarketEvent_Stream_ae1af9a3_3da1_4ade_a0c8_d6abc0f07829</dataSource>
+    <isLimitedToNewFiles>false</isLimitedToNewFiles>
+    <isMissingFileFailure>false</isMissingFileFailure>
+    <masterLabel>MarketEvent_Stream-MarketEvent</masterLabel>
+    <mktDataLakeObject>MarketEvent_Stream_MarketEvent_DAC482DB__dll</mktDataLakeObject>
+    <mktDataTranObject>MarketEvent_Stream_MarketEvent_DAC482DB</mktDataTranObject>
+</DataStreamDefinition>

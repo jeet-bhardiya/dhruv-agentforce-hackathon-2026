@@ -1,114 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>61.0</apiVersion>
-    <description>Platform-event-triggered. On each Market_Impact_Event__e: creates a Market_Event__c, queries impacted Person Accounts via QueryClientExposureGraph, then bulk-creates Market_Impact__c rows and notifies the impacted RMs via DispatchMarketImpacts.</description>
-    <environments>Default</environments>
-    <interviewLabel>MarketImpact Detect Segment {!$Flow.CurrentDateTime}</interviewLabel>
-    <label>MarketImpact Detect Segment</label>
-    <processMetadataValues>
-        <name>BuilderType</name>
-        <value>
-            <stringValue>LightningFlowBuilder</stringValue>
-        </value>
-    </processMetadataValues>
-    <processType>AutoLaunchedFlow</processType>
-    <runInMode>SystemModeWithSharing</runInMode>
-    <start>
-        <locationX>176</locationX>
-        <locationY>0</locationY>
-        <connector>
-            <targetReference>Create_Market_Event</targetReference>
-        </connector>
-        <object>Market_Impact_Event__e</object>
-        <triggerType>PlatformEvent</triggerType>
-    </start>
-    <status>Active</status>
-
-    <recordCreates>
-        <name>Create_Market_Event</name>
-        <label>Create Market Event</label>
-        <locationX>176</locationX>
-        <locationY>134</locationY>
-        <connector>
-            <targetReference>Query_Exposure</targetReference>
-        </connector>
-        <inputAssignments>
-            <field>Symbol__c</field>
-            <value>
-                <elementReference>$Record.Symbol__c</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Event_Type__c</field>
-            <value>
-                <stringValue>RBI_MPC</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Pct_Change__c</field>
-            <value>
-                <elementReference>$Record.Pct_Change__c</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Sector__c</field>
-            <value>
-                <elementReference>$Record.Sector__c</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Severity__c</field>
-            <value>
-                <elementReference>$Record.Severity__c</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Trigger_Time__c</field>
-            <value>
-                <elementReference>$Record.Trigger_Time__c</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Source__c</field>
-            <value>
-                <stringValue>Streaming Ingestion</stringValue>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Headline__c</field>
-            <value>
-                <elementReference>varHeadline</elementReference>
-            </value>
-        </inputAssignments>
-        <object>Market_Event__c</object>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </recordCreates>
-
-    <actionCalls>
-        <name>Query_Exposure</name>
-        <label>Query Client Exposure Graph</label>
-        <locationX>176</locationX>
-        <locationY>250</locationY>
-        <actionName>QueryClientExposureGraph</actionName>
-        <actionType>apex</actionType>
-        <connector>
-            <targetReference>Dispatch_Impacts</targetReference>
-        </connector>
-        <inputParameters>
-            <name>sector</name>
-            <value>
-                <elementReference>$Record.Sector__c</elementReference>
-            </value>
-        </inputParameters>
-        <inputParameters>
-            <name>minExposurePct</name>
-            <value>
-                <numberValue>20.0</numberValue>
-            </value>
-        </inputParameters>
-        <storeOutputAutomatically>true</storeOutputAutomatically>
-    </actionCalls>
-
     <actionCalls>
         <name>Dispatch_Impacts</name>
         <label>Dispatch Impacts and Notify RMs</label>
@@ -116,6 +7,7 @@
         <locationY>366</locationY>
         <actionName>DispatchMarketImpacts</actionName>
         <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
         <inputParameters>
             <name>marketEventId</name>
             <value>
@@ -146,12 +38,122 @@
                 <elementReference>varHeadline</elementReference>
             </value>
         </inputParameters>
+        <nameSegment>DispatchMarketImpacts</nameSegment>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </actionCalls>
-
+    <actionCalls>
+        <name>Query_Exposure</name>
+        <label>Query Client Exposure Graph</label>
+        <locationX>176</locationX>
+        <locationY>250</locationY>
+        <actionName>QueryClientExposureGraph</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Dispatch_Impacts</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>sector</name>
+            <value>
+                <elementReference>$Record.Sector__c</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>minExposurePct</name>
+            <value>
+                <numberValue>20.0</numberValue>
+            </value>
+        </inputParameters>
+        <nameSegment>QueryClientExposureGraph</nameSegment>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <apiVersion>61.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>Platform-event-triggered. On each Market_Impact_Event__e: creates a Market_Event__c, queries impacted Person Accounts via QueryClientExposureGraph, then bulk-creates Market_Impact__c rows and notifies the impacted RMs via DispatchMarketImpacts.</description>
+    <environments>Default</environments>
     <formulas>
         <name>varHeadline</name>
         <dataType>String</dataType>
-        <expression>"Event " &amp; {!$Record.Event_Id__c} &amp; " — " &amp; {!$Record.Symbol__c} &amp; " " &amp; TEXT({!$Record.Pct_Change__c}) &amp; "%"</expression>
+        <expression>&quot;Event &quot; &amp; {!$Record.Event_Id__c} &amp; &quot; — &quot; &amp; {!$Record.Symbol__c} &amp; &quot; &quot; &amp; TEXT({!$Record.Pct_Change__c}) &amp; &quot;%&quot;</expression>
     </formulas>
+    <interviewLabel>MarketImpact Detect Segment {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>MarketImpact Detect Segment</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <name>Create_Market_Event</name>
+        <label>Create Market Event</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <connector>
+            <targetReference>Query_Exposure</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Event_Type__c</field>
+            <value>
+                <stringValue>RBI_MPC</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Headline__c</field>
+            <value>
+                <elementReference>varHeadline</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Pct_Change__c</field>
+            <value>
+                <elementReference>$Record.Pct_Change__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Sector__c</field>
+            <value>
+                <elementReference>$Record.Sector__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Severity__c</field>
+            <value>
+                <elementReference>$Record.Severity__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Source__c</field>
+            <value>
+                <stringValue>Streaming Ingestion</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Symbol__c</field>
+            <value>
+                <elementReference>$Record.Symbol__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Trigger_Time__c</field>
+            <value>
+                <elementReference>$Record.Trigger_Time__c</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Market_Event__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <runInMode>SystemModeWithSharing</runInMode>
+    <start>
+        <locationX>176</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Create_Market_Event</targetReference>
+        </connector>
+        <flowRunAsUser>TriggeringUser</flowRunAsUser>
+        <object>Market_Impact_Event__e</object>
+        <triggerType>PlatformEvent</triggerType>
+    </start>
+    <status>Active</status>
 </Flow>
