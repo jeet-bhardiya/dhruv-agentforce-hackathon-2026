@@ -46,3 +46,6 @@ $RECYCLE.BIN/
 **/__pycache__/
 **/.venv/
 **/venv/
+
+# Submission file contains credentials — keep local only
+SUBMISSION.md
